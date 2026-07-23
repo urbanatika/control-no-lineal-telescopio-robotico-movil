@@ -1,0 +1,321 @@
+% =====================================================================
+% Bibliografía combinada: (1) referencias del paper base ALMA, (2)
+% referencias sobre plataformas móviles/gimbal/aislamiento de vibración,
+% (3) referencias de formulación matemática SMC/MPC/Neuro-Difuso.
+% Verificadas por búsqueda web (ver conversación); algunas entradas de
+% venue secundario están marcadas con nota "detalles verificar en fuente
+% primaria antes de someter a publicación formal".
+% =====================================================================
+
+% --- Paper base (ALMA, Elorza-Rivera & Esper) -----------------------
+@article{ortega2014pointing,
+  author  = {Ortega, J. M. and Smith, R. S. and Thomsen, M.},
+  title   = {Pointing and tracking control architecture of the {ALMA} 12-m antennas under severe wind disturbances},
+  journal = {IEEE Transactions on Control Systems Technology},
+  volume  = {22}, number = {4}, pages = {1432--1445}, year = {2014}
+}
+@book{slotine1991applied,
+  author = {Slotine, J.-J. E. and Li, W.},
+  title  = {Applied Nonlinear Control},
+  publisher = {Prentice Hall}, address = {Englewood Cliffs, NJ}, year = {1991}
+}
+@book{astrom1995adaptive,
+  author = {{\AA}str{\"o}m, K. J. and Wittenmark, B.},
+  title  = {Adaptive Control}, edition = {2nd},
+  publisher = {Addison-Wesley}, address = {Reading, MA}, year = {1995}
+}
+@article{kalman1960new,
+  author = {Kalman, R. E.},
+  title  = {A new approach to linear filtering and prediction problems},
+  journal = {Transactions of the ASME--Journal of Basic Engineering},
+  volume = {82}, number = {1}, pages = {35--45}, year = {1960}
+}
+@techreport{welch2001introduction,
+  author = {Welch, G. and Bishop, G.},
+  title  = {An introduction to the {K}alman filter},
+  institution = {University of North Carolina at Chapel Hill}, number = {TR-95-041}, year = {2001}
+}
+@book{sastry1989adaptive,
+  author = {Sastry, S. and Bodson, M.},
+  title  = {Adaptive Control: Stability, Convergence and Robustness},
+  publisher = {Prentice Hall}, address = {Englewood Cliffs, NJ}, year = {1989}
+}
+@article{solis2022nonlinear,
+  author  = {Solis-Cid, M. and Elorza-Rivera, D. N. and Huera, P. A.},
+  title   = {Nonlinear control and vibration isolation of massive telescope structures in highly seismic regions},
+  journal = {IEEE Transactions on Aerospace and Electronic Systems},
+  volume  = {58}, number = {3}, pages = {2102--2115}, year = {2022}
+}
+@book{khalil2002nonlinear,
+  author = {Khalil, H. K.}, title = {Nonlinear Systems}, edition = {3rd},
+  publisher = {Prentice Hall}, address = {Upper Saddle River, NJ}, year = {2002}
+}
+@book{gawronski2004advanced,
+  author = {Gawronski, T. J.},
+  title  = {Advanced Structural Dynamics and Active Control of Structures},
+  publisher = {Springer-Verlag}, address = {New York}, year = {2004}
+}
+@inproceedings{thomsen2012alma,
+  author    = {Thomsen, M.},
+  title     = {The {ALMA} telescope project: Challenges in high-precision mechanical design and control},
+  booktitle = {Proc. IEEE International Conference on Control Applications (CCA)},
+  address   = {Taipei, Taiwan}, pages = {450--459}, year = {2012}
+}
+@book{jazwinski1970stochastic,
+  author = {Jazwinski, A. H.}, title = {Stochastic Processes and Filtering Theory},
+  publisher = {Academic Press}, address = {New York}, year = {1970}
+}
+@book{kirk1970optimal,
+  author = {Kirk, D. E.}, title = {Optimal Control Theory: An Introduction},
+  publisher = {Prentice Hall}, address = {Englewood Cliffs, NJ}, year = {1970}
+}
+@inproceedings{smith2011wind,
+  author    = {Smith, R. S. and Ortega, J. M.},
+  title     = {Wind disturbance estimation and rejection for the {A}tacama {L}arge {M}illimeter {A}rray antennas},
+  booktitle = {IEEE Conference on Decision and Control (CDC)},
+  address   = {Las Vegas, NV}, pages = {3122--3127}, year = {2011}
+}
+@article{garcia1989mpc,
+  author  = {Garcia, C. E. and Prett, D. M. and Morari, M.},
+  title   = {Model predictive control: Theory and practice---a survey},
+  journal = {Automatica}, volume = {25}, number = {3}, pages = {335--348}, year = {1989}
+}
+@techreport{csn2025reporte,
+  author      = {{Centro Sismol{\'o}gico Nacional (CSN)}},
+  title       = {Reporte t{\'e}cnico de aceleraciones s{\'i}smicas de la red de cobertura nacional de la {\'u}ltima d{\'e}cada},
+  institution = {Universidad de Chile}, number = {CSN-2025-02}, year = {2025}
+}
+
+% --- Plataformas móviles / gimbal / antenas no inerciales -----------
+@article{hilkert2008inertially,
+  author  = {Hilkert, J. M.},
+  title   = {Inertially stabilized platform technology: Concepts and principles},
+  journal = {IEEE Control Systems Magazine},
+  volume  = {28}, number = {1}, pages = {26--46}, year = {2008}
+}
+@article{masten2008inertially,
+  author  = {Masten, M. K.},
+  title   = {Inertially stabilized platforms for optical imaging systems: Tracking dynamic targets with mobile sensors},
+  journal = {IEEE Control Systems Magazine},
+  volume  = {28}, number = {1}, pages = {47--64}, year = {2008}
+}
+@inproceedings{algrain1993accelerometer,
+  author    = {Algrain, M. C. and Quinn, J.},
+  title     = {Accelerometer based line-of-sight stabilization approach for pointing and tracking systems},
+  booktitle = {Proc. IEEE International Conference on Control and Applications}, year = {1993}
+}
+@inproceedings{hepworth2019twoaxis,
+  author    = {Hepworth, J. H. and Mouton, H. D.},
+  title     = {Systems development of a two-axis stabilised platform to facilitate astronomical observations from a moving base},
+  booktitle = {Proc. SAUPEC/RobMech/PRASA}, year = {2019},
+  note      = {IEEE Xplore doc. 8704853}
+}
+@article{he2023pointing,
+  author  = {He, Y. and Zhang, Y. and Feng, X. and Deng, S. and Wang, Z.},
+  title   = {Pointing error correction for a moving-platform electro-optical telescope using an optimized parameter model},
+  journal = {Sensors}, volume = {23}, number = {8}, pages = {4121}, year = {2023}
+}
+@article{liu2023precise,
+  author  = {Liu, Y. and Deng, Y. and Li, H. and Wang, J. and Wang, D.},
+  title   = {Precise and efficient pointing control of a 2.5-m-wide field survey telescope using {ADRC} and nonlinear disturbance observer},
+  journal = {Sensors}, volume = {23}, number = {13}, pages = {6068}, year = {2023}
+}
+@article{soltani2011reliable,
+  author  = {Soltani, M. N. and Izadi-Zamanabadi, R. and Wisniewski, R.},
+  title   = {Reliable control of ship-mounted satellite tracking antenna},
+  journal = {IEEE Transactions on Control Systems Technology},
+  volume  = {19}, number = {1}, pages = {221--228}, year = {2011}
+}
+@article{kuseyri2017modelling,
+  author  = {Kuseyri, S.},
+  title   = {Modelling and stabilization of a three-axis ship-mounted mobile antenna system},
+  journal = {Proc. IMechE Part M: Journal of Engineering for the Maritime Environment},
+  volume  = {231}, number = {2}, pages = {533--541}, year = {2017}
+}
+@article{qiu2014practical,
+  author  = {Qiu, D. and Sun, M. and Wang, Z. and Wang, Y. and Chen, Z.},
+  title   = {Practical wind-disturbance rejection for large deep space observatory antenna},
+  journal = {IEEE Transactions on Control Systems Technology},
+  volume  = {22}, number = {5}, pages = {1983--1990}, year = {2014}
+}
+
+% --- Mobile manipulators: acoplamiento base-brazo --------------------
+@inproceedings{aadeca2018stabilization,
+  title     = {Stabilization of mobile robotic manipulator through independent base control},
+  booktitle = {26 Congreso Argentino de Control Autom{\'a}tico (AADECA)}, year = {2018},
+  note      = {IEEE Xplore doc. 8577225; autor exacto por verificar en fuente primaria}
+}
+@article{zhu2025enhanced,
+  author  = {Zhu, Z. and Cheung, C. F. and Li, Y.},
+  title   = {Enhanced trajectory tracking accuracy of a mobile manipulator via {MRE} intelligent isolation system under continuous impact disturbances},
+  journal = {Machines}, volume = {14}, number = {4}, pages = {385}, year = {2025}
+}
+@article{burgesslimerick2024reactive,
+  author  = {Burgess-Limerick, B. and Haviland, J. and Lehnert, C. and Corke, P.},
+  title   = {Reactive base control for on-the-move mobile manipulation in dynamic environments},
+  journal = {IEEE Robotics and Automation Letters}, year = {2024},
+  note    = {arXiv:2309.09393}
+}
+@inproceedings{tomizuka1995antibacklash,
+  title     = {Adaptive control of robot manipulators with anti-backlash gears},
+  booktitle = {IEEE International Conference on Robotics and Automation (ICRA)},
+  address   = {Nagoya, Japan}, year = {1995}
+}
+@article{abhari2019adaptive,
+  author  = {Abhari, S. A. and Hashemzadeh, F. and Baradarannia, M. and Kharrati, H.},
+  title   = {An adaptive robust control scheme for robot manipulators with unknown backlash nonlinearity in gears},
+  journal = {Proc. IMechE Part I: Journal of Systems and Control Engineering},
+  volume  = {233}, number = {6}, pages = {689--700}, year = {2019}
+}
+
+% --- Rechazo de vibración de base / aislamiento sísmico ---------------
+@article{guo2023closedloop,
+  author  = {Guo, F. and Wang, S. and Liu, D. and Wang, J.},
+  title   = {A closed-loop dynamic controller for active vibration isolation working on a parallel wheel-legged robot},
+  journal = {Chinese Journal of Mechanical Engineering}, volume = {36}, pages = {79}, year = {2023}
+}
+@article{subasri2014discrete,
+  author  = {Subasri, R. and Suresh, S. and Natarajan, A. M.},
+  title   = {Discrete direct adaptive {ELM} controller for active vibration control of nonlinear base isolation buildings},
+  journal = {Neurocomputing}, volume = {129}, pages = {246--256}, year = {2014}
+}
+
+% --- Gimbal / LOS con IMU ---------------------------------------------
+@article{altan2020model,
+  author  = {Altan, A. and Hac{\i}o{\u{g}}lu, R.},
+  title   = {Model predictive control of three-axis gimbal system mounted on {UAV} for real-time target tracking under external disturbances},
+  journal = {Mechanical Systems and Signal Processing}, volume = {138}, pages = {106548}, year = {2020}
+}
+@article{moya2017twoaxis,
+  author  = {Moya, E. and Araki, K. and Okada, M. and Mizuno, A. and Tadakuma, K. and Tadakuma, R.},
+  title   = {Two-axis gimbal with passive revolute joints for motion isolation of a stabilizing mechanism},
+  journal = {Advances in Science, Technology and Engineering Systems Journal}, volume = {2}, number = {3}, pages = {176--183}, year = {2017}
+}
+@article{luo2017combining,
+  author  = {Luo, Y. and Huang, Y. and others},
+  title   = {Combining a disturbance observer with triple-loop control based on {MEMS} accelerometers for line-of-sight stabilization},
+  journal = {Sensors}, year = {2017}, note = {PMC5712997}
+}
+
+% --- Combinación adaptativo + EKF/observador + SMC/MPC/Fuzzy ----------
+@article{agarwal2016disturbance,
+  author  = {Agarwal, V. and Parthasarathy, H.},
+  title   = {Disturbance estimator as a state observer with extended {K}alman filter for robotic manipulator},
+  journal = {Nonlinear Dynamics}, volume = {85}, pages = {2809--2825}, year = {2016}
+}
+@article{ekfsmc2023robust,
+  title   = {Robust adaptive trajectory tracking for space manipulator via extended {K}alman filter, high-order disturbance observer, and discrete nonsingular terminal sliding mode control},
+  journal = {Mechanism and Machine Theory}, year = {2023},
+  note    = {autores por confirmar en fuente primaria}
+}
+@article{anfis2012procedia,
+  title   = {{ANFIS} technique applied to the control of a robot manipulator with disturbances},
+  journal = {Procedia Engineering}, year = {2012},
+  note    = {autores por confirmar en fuente primaria}
+}
+@article{ntsm2025processes,
+  title   = {Adaptive non-singular terminal sliding mode trajectory tracking control of robotic manipulators based on disturbance observer under unknown time-varying disturbance},
+  journal = {Processes (MDPI)}, volume = {13}, number = {1}, pages = {266}, year = {2025}
+}
+
+% --- SMC: formulación matemática ---------------------------------------
+@article{utkin1977variable,
+  author  = {Utkin, V. I.},
+  title   = {Variable structure systems with sliding modes},
+  journal = {IEEE Transactions on Automatic Control},
+  volume  = {22}, number = {2}, pages = {212--222}, year = {1977}
+}
+@article{slotine1984sliding,
+  author  = {Slotine, J.-J. E.},
+  title   = {Sliding controller design for non-linear systems},
+  journal = {International Journal of Control},
+  volume  = {40}, number = {2}, pages = {421--434}, year = {1984}
+}
+@article{feng2002nonsingular,
+  author  = {Feng, Y. and Yu, X. and Man, Z.},
+  title   = {Non-singular terminal sliding mode control of rigid manipulators},
+  journal = {Automatica}, volume = {38}, number = {12}, pages = {2159--2167}, year = {2002}
+}
+@article{levant1993sliding,
+  author  = {Levant, A.},
+  title   = {Sliding order and sliding accuracy in sliding mode control},
+  journal = {International Journal of Control}, volume = {58}, number = {6}, pages = {1247--1263}, year = {1993}
+}
+@article{bartolini1998chattering,
+  author  = {Bartolini, G. and Ferrara, A. and Usai, E.},
+  title   = {Chattering avoidance by second-order sliding mode control},
+  journal = {IEEE Transactions on Automatic Control}, volume = {43}, number = {2}, pages = {241--246}, year = {1998}
+}
+@article{moreno2012strict,
+  author  = {Moreno, J. A. and Osorio, M.},
+  title   = {Strict {L}yapunov functions for the super-twisting algorithm},
+  journal = {IEEE Transactions on Automatic Control}, volume = {57}, number = {4}, pages = {1035--1040}, year = {2012}
+}
+@article{van2021adaptive,
+  author  = {Van, M. and Ge, S. S.},
+  title   = {Adaptive fuzzy integral sliding-mode control for robust fault-tolerant control of robot manipulators with disturbance observer},
+  journal = {IEEE Transactions on Fuzzy Systems}, volume = {29}, number = {5}, pages = {1284--1296}, year = {2021}
+}
+
+% --- MPC: formulación matemática ---------------------------------------
+@article{mayne2000constrained,
+  author  = {Mayne, D. Q. and Rawlings, J. B. and Rao, C. V. and Scokaert, P. O. M.},
+  title   = {Constrained model predictive control: Stability and optimality},
+  journal = {Automatica}, volume = {36}, number = {6}, pages = {789--814}, year = {2000}
+}
+@article{qin2003survey,
+  author  = {Qin, S. J. and Badgwell, T. A.},
+  title   = {A survey of industrial model predictive control technology},
+  journal = {Control Engineering Practice}, volume = {11}, number = {7}, pages = {733--764}, year = {2003}
+}
+@book{camacho2007model,
+  author = {Camacho, E. F. and Bordons, C.}, title = {Model Predictive Control}, edition = {2nd},
+  publisher = {Springer}, address = {London, U.K.}, year = {2007}
+}
+@article{nubert2020safe,
+  author  = {Nubert, J. and K{\"o}hler, J. and Berenz, V. and Allg{\"o}wer, F. and Trimpe, S.},
+  title   = {Safe and fast tracking on a robot manipulator: Robust {MPC} and neural network control},
+  journal = {IEEE Robotics and Automation Letters}, volume = {5}, number = {2}, pages = {3050--3057}, year = {2020}
+}
+@inproceedings{grandia2020nonlinear,
+  author    = {Grandia, R. and Taylor, A. J. and Singletary, A. and Hutter, M. and Ames, A. D.},
+  title     = {Nonlinear model predictive control of robotic systems with control {L}yapunov functions},
+  booktitle = {Robotics: Science and Systems (RSS)}, year = {2020}
+}
+@article{yang2024disturbance,
+  author  = {Yang, Y. and Xu, H. and Yao, X.},
+  title   = {Disturbance rejection event-triggered robust model predictive control for tracking of constrained uncertain robotic manipulators},
+  journal = {IEEE Transactions on Cybernetics}, volume = {54}, number = {6}, pages = {3540--3552}, year = {2024}
+}
+
+% --- Neuro-difuso: formulación matemática -------------------------------
+@article{wang1992fuzzy,
+  author  = {Wang, L.-X. and Mendel, J. M.},
+  title   = {Fuzzy basis functions, universal approximation, and orthogonal least-squares learning},
+  journal = {IEEE Transactions on Neural Networks}, volume = {3}, number = {5}, pages = {807--814}, year = {1992}
+}
+@article{wang1993stable,
+  author  = {Wang, L.-X.},
+  title   = {Stable adaptive fuzzy control of nonlinear systems},
+  journal = {IEEE Transactions on Fuzzy Systems}, volume = {1}, number = {2}, pages = {146--155}, year = {1993}
+}
+@article{jang1993anfis,
+  author  = {Jang, J.-S. R.},
+  title   = {{ANFIS}: Adaptive-network-based fuzzy inference system},
+  journal = {IEEE Transactions on Systems, Man, and Cybernetics}, volume = {23}, number = {3}, pages = {665--685}, year = {1993}
+}
+@article{spooner1996stable,
+  author  = {Spooner, J. T. and Passino, K. M.},
+  title   = {Stable adaptive control using fuzzy systems and neural networks},
+  journal = {IEEE Transactions on Fuzzy Systems}, volume = {4}, number = {3}, pages = {339--359}, year = {1996}
+}
+@article{van2023adaptive,
+  author  = {Van, M. and Sun, Y. and McIlvanna, S. and Nhat, N. M. and Khyam, M. O. and Ceglarek, D.},
+  title   = {Adaptive fuzzy fault-tolerant control for robot manipulators with fixed-time convergence},
+  journal = {IEEE Transactions on Fuzzy Systems}, volume = {31}, number = {9}, pages = {3210--3219}, year = {2023}
+}
+@article{yan2021tsm,
+  author  = {Yan, F. and Wang, S.},
+  title   = {{TSM}-based adaptive fuzzy control of robotic manipulators with output constraints},
+  journal = {Computational Intelligence and Neuroscience}, volume = {2021}, pages = {5812584}, year = {2021}
+}
