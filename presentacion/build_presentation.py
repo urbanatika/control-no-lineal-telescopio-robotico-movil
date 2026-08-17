@@ -275,7 +275,32 @@ add_bullets(s, [
 add_footer(s, "10")
 
 # ---------------------------------------------------------------------
-# 11. Conclusiones
+# 11. Arquitectura del prototipo (diagrama de bloques)
+# ---------------------------------------------------------------------
+s = add_slide(); bg(s); add_bar(s)
+add_title(s, "Arquitectura del prototipo: diagrama de bloques")
+add_image(s, f"{FIG}/fig9_diagrama_bloques.png", left=3.57, top=1.5, height=5.2)
+add_footer(s, "11")
+
+# ---------------------------------------------------------------------
+# 12. Layout mecánico + esquema eléctrico
+# ---------------------------------------------------------------------
+s = add_slide(); bg(s); add_bar(s)
+add_title(s, "Diseño mecánico y esquema eléctrico")
+add_image(s, f"{FIG}/fig11_layout_mecanico.png", left=0.6, top=1.7, height=4.7)
+add_image(s, f"{FIG}/fig10_esquema_electrico.png", left=6.7, top=1.7, height=4.7)
+add_footer(s, "12")
+
+# ---------------------------------------------------------------------
+# 13. Banco de pruebas
+# ---------------------------------------------------------------------
+s = add_slide(); bg(s); add_bar(s)
+add_title(s, "Banco de pruebas: perturbaciones controladas")
+add_image(s, f"{FIG}/fig12_banco_pruebas.png", left=2.59, top=1.7, height=5.0)
+add_footer(s, "13")
+
+# ---------------------------------------------------------------------
+# 14. Conclusiones
 # ---------------------------------------------------------------------
 s = add_slide(); bg(s); add_bar(s)
 add_title(s, "Conclusiones")
@@ -286,7 +311,7 @@ add_bullets(s, [
     (0, "EKF de fusión sensorial: estimación robusta del viento, válida como capa común independiente de la ley de control"),
     (0, "Próximo paso: validación física en el prototipo de banco de laboratorio propuesto"),
 ], top=1.7, size=19)
-add_footer(s, "11")
+add_footer(s, "14")
 
 prs.save("presentacion.pptx")
 print("Guardado presentacion.pptx")

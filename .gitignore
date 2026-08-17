@@ -1,3 +1,13 @@
 __pycache__/
 *.pyc
 .claude/settings.local.json
+
+# LaTeX build artifacts (Overleaf recompiles these; no need to track)
+*.aux
+*.bbl
+*.blg
+*.log
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.out

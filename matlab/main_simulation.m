@@ -12,7 +12,7 @@
 % además de todas las figuras comparativas en ../figures/.
 
 clear; clc; close all;
-rng(20250716, 'twister');   % SEED idéntico al usado en Python
+% (el seed se fija dentro de run_one, una vez por controlador -- ver abajo)
 
 DT = 1e-3;
 T_FINAL = 60.0;
@@ -50,6 +50,7 @@ disp(struct2table(metrics));
 function log = run_one(controller_type, params, dt, n_steps, t_final, ...
                         sigma_enc, sigma_gyro, q1_0, q2_0, omega1, omega2, label)
 
+    rng(20250716, 'twister');   % reinicia el stream por controlador: comparación pareada
     wind_state.tv1 = 0.0; wind_state.tv2 = 0.0;
     terrain_state.hp_state = 0.0; terrain_state.hp_prev = 0.0; terrain_state.lp_state = 0.0;
 

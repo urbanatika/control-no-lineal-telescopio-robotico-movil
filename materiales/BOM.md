@@ -96,6 +96,37 @@ Chile (importación). No incluye herramientas de taller, impresora 3D
 
 ---
 
+## Diagramas de diseño
+
+Generados en `python_sim/make_diagrams.py`, guardados en `../figures/` (PNG 300dpi
++ PDF vectorial), consistentes con el resto de las figuras del proyecto.
+
+![Diagrama de bloques del sistema](../figures/fig9_diagrama_bloques.png)
+
+*Fig. 9 — Diagrama de bloques: perturbaciones → sensórica → cómputo (MCU +
+SBC) → actuación → planta física, con la realimentación óptica de
+validación.*
+
+![Esquema eléctrico y de buses](../figures/fig10_esquema_electrico.png)
+
+*Fig. 10 — Alimentación (batería/BMS → reguladores buck → riel 12/5 V),
+buses de datos (cuadratura, I2C/SPI, USB, UART/SPI/CAN entre MCU y SBC) y
+tierra común.*
+
+![Layout mecánico del robot](../figures/fig11_layout_mecanico.png)
+
+*Fig. 11 — Vista lateral: base móvil, actuador de acimut, actuador de
+elevación, tubo óptico simulado con contrapeso, y carga útil (láser+PSD)
+en la punta.*
+
+![Disposición del banco de pruebas](../figures/fig12_banco_pruebas.png)
+
+*Fig. 12 — Robot sobre el shaker (perfil sísmico), ventiladores generando
+las ráfagas de viento, y blanco fijo para medir el error de apuntamiento
+por línea de visión.*
+
+---
+
 ## Hoja de ruta de implementación física sugerida
 
 1. **Fase 1 — Validación de subsistemas aislados**: ensamblar y caracterizar
