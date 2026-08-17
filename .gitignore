@@ -11,3 +11,6 @@ __pycache__/
 *.fls
 *.fdb_latexmk
 *.out
+
+# Regenerable simulation output (re-run matlab/main_simulation.m to recreate)
+matlab/sim_results_matlab.mat

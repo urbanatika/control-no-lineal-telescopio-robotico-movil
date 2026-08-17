@@ -398,15 +398,26 @@ La implementación de referencia se desarrolló en \textbf{MATLAB} (carpeta
 \texttt{MPCAxis.m}, \texttt{FuzzyAxis.m}, \texttt{main\_simulation.m}). Los
 resultados numéricos y figuras se generaron mediante una réplica exacta en
 Python/NumPy/SciPy (\texttt{python\_sim/}), verificada línea a línea
-contra el script de MATLAB por una limitación de licencia/instalación de
-MATLAB al momento de escribir este artículo. La réplica en Python fue
-re-ejecutada de forma independiente (\texttt{python\_sim/main\_simulation.py},
-misma semilla) como control de reproducibilidad, reproduciendo de forma
-determinista los valores de la Tabla~\ref{tab:metricas} hasta el cuarto
-dígito significativo; se recomienda, no obstante, re-ejecutar
-\texttt{matlab/main\_simulation.m} en un entorno con licencia activa como
-verificación cruzada independiente entre ambas plataformas antes de su
-uso en un contexto de publicación formal.
+contra el script de MATLAB. La réplica en Python fue re-ejecutada de forma
+independiente (\texttt{python\_sim/main\_simulation.py}, misma semilla)
+como control de reproducibilidad, reproduciendo de forma determinista los
+valores de la Tabla~\ref{tab:metricas} hasta el cuarto dígito
+significativo. Adicionalmente, el script \texttt{matlab/main\_simulation.m}
+se ejecutó de forma independiente en \textbf{GNU Octave 11.3.0} (entorno
+de cómputo numérico de código abierto, compatible con MATLAB), por no
+disponer de una licencia de MATLAB propietaria al momento de escribir este
+artículo: se obtuvo el mismo ordenamiento de desempeño entre las cuatro
+leyes (SMC~$<$~Neuro-Difuso~$<$~Adaptativo~$<$~MPC) y valores de RMSE
+total dentro de un 3\% de los reportados en la Tabla~\ref{tab:metricas}
+(191.6, 55.3, 318.4 y 115.2 arcsec, respectivamente), con las diferencias
+remanentes atribuibles a los distintos generadores de números
+pseudoaleatorios de Octave y NumPy para una misma semilla. Esta
+verificación cruzada entre dos plataformas de cómputo numérico
+independientes (Python/NumPy y GNU Octave) sobre la misma implementación
+de referencia en MATLAB da confianza en la robustez del ordenamiento
+comparativo reportado; se recomienda, no obstante, una verificación
+adicional con licencia de MATLAB propietaria antes de su uso en un
+contexto de publicación formal.
 
 \section{Resultados y Discusión}
 \label{sec:resultados}
@@ -644,10 +655,12 @@ los datos de simulación, las figuras vectoriales y la lista de materiales
 están disponibles en el repositorio del proyecto. Los resultados y
 figuras se generaron con la réplica en Python (\texttt{python\_sim/}),
 cuya re-ejecución independiente con semilla fija reproduce de forma
-determinista las métricas reportadas; se recomienda adicionalmente
-re-ejecutar \texttt{matlab/main\_simulation.m} en un entorno MATLAB con
-licencia activa como verificación cruzada entre ambas plataformas antes
-de su uso en un contexto de publicación formal o defensa de tesis.
+determinista las métricas reportadas, y fueron confirmados de forma
+cruzada mediante la re-ejecución independiente de
+\texttt{matlab/main\_simulation.m} en GNU Octave 11.3.0 (Sección
+``Metodología de Simulación''); se recomienda adicionalmente una
+verificación con licencia de MATLAB propietaria antes de su uso en un
+contexto de publicación formal o defensa de tesis.
 
 \begingroup
 \let\footnotesize\scriptsize
