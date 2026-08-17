@@ -1,0 +1,671 @@
+\documentclass[journal]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{url}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Control No Lineal Multi-Estrategia para la Compensación de\\
+Perturbaciones Sísmicas, Atmosféricas y de Base Móvil en un\\
+Telescopio Robótico Móvil: Comparación de Enfoques\\
+Adaptativo-Lyapunov, Modos Deslizantes, Predictivo y Neuro-Difuso}
+
+\author{Diego~N.~Elorza-Rivera
+\thanks{D. N. Elorza-Rivera is with the Facultad de Ingeniería, Dirección
+de Automatización y Robótica, Universidad Andrés Bello, Santiago, Chile
+(e-mail: d.elorzarivera@uandresbello.edu).}}
+
+\markboth{IEEE Transactions on Control Systems Technology}%
+{Elorza-Rivera: Control No Lineal Multi-Estrategia para un Telescopio Robótico Móvil}
+
+\maketitle
+
+\begin{abstract}
+Este trabajo propone y compara cuatro leyes de control no lineal
+adaptativo-predictivo con Filtro de Kalman Extendido (EKF) de fusión
+sensorial para la estabilización de apuntamiento de un telescopio
+robótico móvil, con base con ruedas y brazo alt-azimutal de 2 grados de
+libertad (GDL), que debe apuntar de forma estable pese a perturbaciones
+sísmicas, ráfagas de viento estocásticas y microvibración de terreno de
+la base móvil.
+El problema se formula como una extensión del caso clásico de antenas
+fijas de gran apertura, como las de 12 m del observatorio ALMA, bien
+documentado en la literatura de control de antenas, incorporando un canal
+de perturbación adicional sin análogo previo: la microvibración de
+terreno de una base con ruedas. Se comparan cuatro leyes bajo un EKF de
+fusión sensorial común: adaptativo por Lyapunov con feedforward sísmico,
+Modos Deslizantes de segundo orden (Super-Twisting), MPC lineal de
+horizonte deslizante, y un compensador Neuro-Difuso Adaptativo. Las
+cuatro estrategias se evalúan bajo un escenario de simulación
+multi-evento idéntico de 60 s que reproduce el perfil de tres terremotos
+chilenos representativos junto con ráfagas de viento tipo Gauss-Markov.
+Los resultados muestran que Modos Deslizantes logra el menor error de
+apuntamiento (RMSE = 53.9 arcsec), seguido por Neuro-Difuso (116.0
+arcsec), Adaptativo-Lyapunov (191.7 arcsec) y MPC lineal (318.7 arcsec,
+penalizado por su incapacidad de corregir el error sistemático de
+parámetros nominales). Se entrega además una hoja de ruta de
+implementación física de bajo costo, con lista de materiales y
+presupuesto estimado, para validar estos resultados.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Adaptativo-Lyapunov, Modos Deslizantes, MPC, Neuro-Difuso, EKF,
+Telescopios Robóticos.
+\end{IEEEkeywords}
+
+\section{Introducción}
+
+La estabilización sub-arcosegundo de antenas fijas de gran apertura,
+como las de 12 m del observatorio ALMA (estructuras de más de 100
+toneladas métricas), frente a perturbación sísmica y de viento es un
+problema extensamente documentado en la literatura de control de
+antenas de gran formato~\cite{gawronski2008modeling,gawronski2001pi,qiu2014practical,mangum2006evaluation}.
+Una arquitectura recurrente en esa literatura combina tres niveles:
+control adaptativo (o robusto) por realimentación, acción feedforward de
+la perturbación sísmica medida por acelerometría, y un Filtro de Kalman
+Extendido (EKF) para la estimación óptima de estado y del torque de
+viento no medible. Este trabajo adopta dicha arquitectura de tres niveles
+como formulación de referencia de eje único (Sección~\ref{sec:modelo}) y
+la extiende hacia un problema más exigente: un \emph{telescopio robótico
+móvil}, con base con ruedas y brazo alt-azimutal de 2 grados de libertad
+(GDL), que debe mantener su instrumento óptico apuntando de forma estable
+pese a perturbaciones sísmicas, ráfagas de viento estocásticas y
+microvibración de terreno propia de la plataforma móvil --- esta última,
+sin análogo en el caso de antena fija sobre fundación masiva.
+
+Un caso de uso cada vez más relevante --- estaciones de observación de
+campaña, telescopios de despliegue rápido para seguimiento de eventos
+transitorios, o plataformas robóticas de inspección con carga útil óptica
+--- exige que el instrumento no esté anclado a una fundación masiva, sino
+montado sobre un \emph{robot móvil con brazo manipulador}. Este escenario
+introduce dos dificultades estructurales ausentes en el caso de antena
+fija:
+
+\begingroup
+\setlength{\itemsep}{0pt}\setlength{\topsep}{2pt}\setlength{\parskip}{0pt}
+\begin{enumerate}
+  \item \textbf{Relación perturbación/inercia más severa}: la inercia de
+  un brazo de banco de laboratorio ($J\sim 1$--$3$ kg·m$^2$) es órdenes de
+  magnitud menor que la de una antena de 12 m ($J\sim 10^4$--$10^5$
+  kg·m$^2$), por lo que la misma perturbación produce una excursión
+  angular relativa mucho mayor.
+  \item \textbf{Microvibración de terreno de la base móvil}: a diferencia
+  de una fundación de concreto, una base con ruedas transmite vibración de
+  alta frecuencia (5--50 Hz) del contacto rueda-terreno y de los propios
+  actuadores de tracción, un canal sin análogo en la literatura de
+  antenas fijas citada arriba.
+\end{enumerate}
+\endgroup
+
+Este artículo formula un modelo de Euler-Lagrange de 2 GDL
+(acimut-elevación) acoplado para el telescopio móvil, y compara --- bajo
+un EKF de fusión sensorial común --- cuatro leyes de control: Adaptativa
+por estabilidad de Lyapunov, Modos Deslizantes de segundo orden, MPC
+lineal de horizonte deslizante y un compensador Neuro-Difuso Adaptativo,
+para cuantificar sus fortalezas y debilidades frente a un mismo perfil de
+perturbación severo y proponer una hoja de ruta de implementación física.
+Las contribuciones específicas de este trabajo son:
+\begingroup
+\setlength{\itemsep}{0pt}\setlength{\topsep}{2pt}\setlength{\parskip}{0pt}
+\begin{enumerate}
+  \item un modelo dinámico de 2 GDL para telescopio robótico móvil que
+  incorpora, además de la perturbación sísmica y de viento clásicas de la
+  literatura de antenas de gran apertura, un canal de microvibración de
+  terreno propio de bases con ruedas, sin análogo en dicha literatura;
+  \item el diseño de cuatro leyes de control de naturaleza distinta
+  (Lyapunov adaptativo, modos deslizantes de segundo orden, MPC lineal y
+  neuro-difuso) operando sobre un EKF de fusión sensorial común, lo que
+  permite una comparación controlada del efecto de la estrategia de
+  control aislado del efecto del estimador;
+  \item una evaluación comparativa cuantitativa bajo un escenario de
+  perturbación sísmica-eólica-terreno multi-evento idéntico y pareado
+  entre las cuatro leyes; y
+  \item una hoja de ruta de validación física de bajo costo (banco de
+  laboratorio, $\sim$US\$1\,743), con lista de materiales, para
+  contrastar experimentalmente el orden de desempeño observado en
+  simulación.
+\end{enumerate}
+\endgroup
+
+\section{Trabajos Relacionados}
+
+La estabilización de línea de visión (LOS) de sensores ópticos sobre
+plataformas no inerciales es un problema clásico de control de
+plataformas inercialmente estabilizadas
+\cite{hilkert2008inertially}, con antecedentes en el
+uso de acelerometría para feedforward de estabilización
+\cite{algrain1993accelerometer} --- el mismo principio del término de
+feedforward sísmico de la ec.~\ref{eq:disturbance}. Casos análogos incluyen la estabilización de un telescopio
+óptico pequeño sobre base móvil terrestre \cite{hepworth2019twoaxis}, la
+corrección de apuntamiento de telescopios electro-ópticos embarcados
+\cite{he2023pointing}, observadores de perturbación no lineales para
+telescopios de gran formato \cite{liu2023precise}, y el control de
+antenas satelitales sobre buques \cite{soltani2011reliable,kuseyri2017modelling},
+cuya formulación Newton-Euler sobre base con perturbación continua es
+estructuralmente cercana al problema aquí tratado.
+
+El acoplamiento dinámico entre base móvil y brazo manipulador ha sido
+estudiado como control de reacción de la base
+\cite{aadeca2018stabilization}, aislamiento semi-activo de vibración de
+piso mediante materiales magnetoreológicos~\cite{zhu2025enhanced}, y
+control reactivo de base durante manipulación en
+movimiento~\cite{burgesslimerick2024reactive}. El backlash de engranajes
+--- relevante para los actuadores de bajo costo de la hoja de ruta física
+(Sección~\ref{sec:materiales}) --- se aborda mediante control adaptativo
+específico \cite{tomizuka1995antibacklash,abhari2019adaptive}. En cuanto
+al rechazo de vibración de la base, tanto en robots móviles sobre terreno
+irregular \cite{guo2023closedloop} como en estructuras con aislamiento
+sísmico \cite{subasri2014discrete} se comparte la estructura matemática
+de disturbio acoplado a la base modelada en la
+Sección~\ref{sec:modelo} mediante el término de microvibración de terreno.
+
+Finalmente, el uso del EKF como estimador explícito de perturbación en
+manipuladores robóticos \cite{agarwal2016disturbance} valida la
+arquitectura de fusión sensorial compartida de este trabajo
+(Sección~\ref{sec:ekf}). Trabajos recientes combinan EKF/observadores de
+perturbación con Modos Deslizantes de orden superior
+\cite{ntsm2025processes} y con compensadores neuro-difusos tipo ANFIS
+\cite{anfis2012procedia}, precedentes directos de las
+secciones~\ref{sec:smc}, \ref{sec:mpc}~y~\ref{sec:fuzzy}.
+
+\section{Modelamiento Matemático}
+\label{sec:modelo}
+
+\subsection{Dinámica no lineal del telescopio móvil (2 GDL)}
+Partiendo de la formulación clásica de Euler-Lagrange de eje único
+empleada en la literatura de control de antenas de gran apertura~\cite{gawronski2008modeling},
+se modela el conjunto brazo alt-azimutal
+mediante las coordenadas generalizadas $q = [q_1, q_2]^T$ (acimut,
+elevación), con acoplamiento inercial dependiente de $q_2$:
+\begin{align}
+J_1(q_2)\ddot{q}_1 + \dot{J}_1(q_2)\dot{q}_1\dot{q}_2 + b_1\dot{q}_1 &= \tau_1(t) - \tau_{d,1}(t) \label{eq:az}\\
+J_2\ddot{q}_2 + \tfrac{1}{2}\dot{J}_1(q_2)\dot{q}_1^2 + b_2\dot{q}_2 + mgl\cos(q_2) &= \tau_2(t) - \tau_{d,2}(t) \label{eq:el}
+\end{align}
+donde $J_1(q_2) = J_{1,0} + J_{1,c}\cos^2(q_2)$ es el acoplamiento
+geométrico entre la inercia de acimut y la extensión del brazo en
+elevación, $b_1,b_2$ los coeficientes de fricción viscosa, $mgl$ el par
+gravitacional del conjunto (forma estándar $mgl\sin(q)$ de un péndulo
+actuado, aquí en $\cos(q_2)$ por la convención de elevación), y
+$\tau_{d,i}(t)$ agrupa las perturbaciones por eje. El sistema se reescribe
+en forma parametrizada lineal $Y_i(q,\dot q, \dot q_r, \ddot
+q_r)\theta_i = \tau_i - \tau_{d,i}$, con $\theta = [J_1, b_1, J_2, b_2,
+mgl]^T$ parcialmente desconocido.
+
+\subsection{Perturbaciones acopladas}
+\label{sec:perturbaciones}
+El par de perturbación total por eje agrupa tres componentes:
+\begin{equation}
+\tau_{d,i}(t) = \underbrace{F_{s,i}\ddot{x}_g(t)}_{\text{sísmico}} \;-\; \underbrace{\tau_{v,i}(t)}_{\text{viento}} \;+\; \underbrace{g_{t,i}\,a_{terr}(t)}_{\text{terreno (nuevo)}}
+\label{eq:disturbance}
+\end{equation}
+El primer término modela el acoplamiento inercial clásico entre la
+perturbación sísmica y el par articular: $F_{s,i}$ proyecta la
+aceleración de suelo $\ddot x_g(t)$ hacia el par articular, consistente
+con la formulación estándar de perturbación sísmica sobre estructuras de
+gran inercia~\cite{gawronski2008modeling}. El segundo sigue la
+formulación estándar de ráfagas de viento estocásticas como proceso de
+Gauss-Markov de primer orden empleada en la literatura de control de
+antenas~\cite{qiu2014practical,gawronski2008modeling},
+\begin{equation}
+\dot\tau_{v,i}(t) = -\alpha_i\tau_{v,i}(t) + w_i(t),
+\label{eq:gaussmarkov}
+\end{equation}
+con $w_i(t)$ ruido blanco gaussiano. El \textbf{tercer término es nuevo}
+respecto a dicha literatura clásica de antenas fijas y modela la
+microvibración de terreno propia de una base con ruedas: una señal de
+ruido de banda limitada (5--50 Hz, filtro pasa-banda de primer orden
+sobre ruido blanco) que \emph{no} se compensa por feedforward en ninguna
+de las cuatro leyes de control comparadas --- constituye, por diseño, el
+residuo no modelado contra el cual se mide la robustez comparativa de las
+estrategias.
+
+El perfil sísmico sintético $\ddot x_g(t)$ reproduce cualitativamente la
+estructura espectral y de envolvente de tres eventos sísmicos chilenos
+representativos sobre una ventana de 60 s: fase basal (0--5 s), Coquimbo
+2015 $M_w 8.4$ (5--25 s, alta frecuencia), Chiloé 2016 $M_w 7.6$
+(25--45 s, baja frecuencia y gran amplitud) y enjambre de Melipilla 2017
+$M_w 6.9$ (45--60 s, ráfagas impulsivas). Al ser señales sintéticas --no
+registros directos del CSN~\cite{csn2025reporte}-- replican
+cualitativamente las propiedades espectrales de la fuente pero no
+constituyen datos sismológicos verificados; se recomienda sustituirlas
+por acelerogramas reales de la red CSN antes de una validación de campo.
+
+\textbf{Nota de escala.} Los valores de $F_{s,i}$ y de la desviación
+estándar del viento $\sigma_v$ reportados en la literatura de control de
+antenas de gran apertura~\cite{gawronski2008modeling,qiu2014practical}
+están dimensionados para una antena de $\sim$100 toneladas
+($J\sim10^4$--$10^5$ kg·m$^2$). Para el
+telescopio móvil de banco ($J_1\approx3.2$, $J_2\approx1.75$ kg·m$^2$) se
+conserva la misma estructura pero se reescalan las amplitudes
+proporcionalmente a la inercia y superficie frontal, menores, de la
+plataforma pequeña ($\sigma_v = 1.8$ N·m).
+
+\section{Diseño de las Leyes de Control}
+
+\subsection{Filtro de Kalman Extendido de fusión sensorial (común)}
+\label{sec:ekf}
+Las cuatro leyes comparten un EKF descentralizado por eje --formulación
+estándar de estimación de perturbación no medible en sistemas mecánicos
+mediante EKF~\cite{agarwal2016disturbance}-- con estado extendido
+$x_i = [q_i, \dot q_i, \tau_{v,i}]^T$ y dinámica no lineal
+$\dot x_i = f_i(x_i,\tau_i,\ddot x_g) + w_t$, discretizada a 1 kHz:
+\begin{align}
+x_{k|k-1} &= x_{k-1|k-1} + f(x_{k-1|k-1},\tau_{k-1},\ddot x_{g,k-1})\Delta t\\
+P_{k|k-1} &= \Phi_{k-1}P_{k-1|k-1}\Phi_{k-1}^T + Q\\
+K_k &= P_{k|k-1}H^T(HP_{k|k-1}H^T+R)^{-1}\\
+x_{k|k} &= x_{k|k-1} + K_k(z_k - Hx_{k|k-1})
+\end{align}
+con $\Phi_{k-1}=I+F(x_{k-1|k-1})\Delta t$ y $F$ la jacobiana analítica del
+sistema (adaptada a $\cos(q_2)$ para el eje de elevación). El vector de
+mediciones $z_k=[q_{enc},\dot q_{gyro}]^T$ se contamina con ruido
+gaussiano aditivo $\sigma_e=0.002$ rad (encoder) y $\sigma_g=0.01$ rad/s
+(giróscopo), valores representativos de sensórica industrial de
+precisión media. El estado purificado $x_{k|k}$ --incluyendo la
+estimación del torque de viento $\hat\tau_{v,i}$-- alimenta las cuatro
+leyes de control siguientes.
+
+\subsection{Control Adaptativo por Estabilidad de Lyapunov}
+Se emplea la formulación estándar de control adaptativo por par
+calculado sobre superficie deslizante~\cite{slotine1991applied,astrom1995adaptive,sastry1989adaptive},
+extendida vectorialmente a los 2 GDL acoplados del telescopio móvil. Para
+cada eje se define $e=q-q_d$, la superficie de error acoplada
+$s=\dot e+\lambda e$, y las variables de referencia virtual
+$\dot q_r=\dot q_d-\lambda e$, $\ddot q_r=\ddot q_d-\lambda\dot e$. La
+función candidata de Lyapunov $V=\tfrac12 Js^2+\tfrac12\tilde\theta^T\Gamma^{-1}\tilde\theta$
+conduce a la ley de control
+\begin{equation}
+\tau_i = Y_i(q,\dot q,\dot q_r,\ddot q_r)\hat\theta_i - K_d s_i + F_{s,i}\ddot x_g(t) - \hat\tau_{v,i}(t)
+\label{eq:adaptive_law}
+\end{equation}
+y la ley de adaptación paramétrica $\dot{\hat\theta}_i = -\Gamma_i Y_i^T s_i$,
+que garantiza $\dot V\le-K_d s^2$ y estabilidad asintótica global en el
+sentido de Lyapunov-Barbalat. Ganancias utilizadas: $\lambda=10$,
+$K_d=22$, con error paramétrico inicial intencional de 25--30\% respecto
+a los valores reales (incertidumbre estructural parcial, misma premisa
+aplicada por igual a las cuatro leyes de control comparadas en este
+trabajo).
+
+\subsection{Control por Modos Deslizantes de Segundo Orden (Super-Twisting)}
+\label{sec:smc}
+Sobre la misma superficie deslizante $s=\dot e+\lambda e$, se emplea el
+algoritmo Super-Twisting~\cite{moreno2012strict}, que evita el chattering
+del SMC de primer orden clásico~\cite{utkin1977variable}
+mediante una ley continua de segundo orden:
+\begin{align}
+\tau_i &= Y_i\theta_{i,nom} + F_{s,i}\ddot x_g(t) - \hat\tau_{v,i}(t) - k_1\sqrt{|s_i|}\,\mathrm{sgn}(s_i) + w_i\\
+\dot w_i &= -k_2\,\mathrm{sgn}(s_i)
+\end{align}
+con $k_1=6$, $k_2=18$, condiciones suficientes de convergencia en tiempo
+finito según~\cite{moreno2012strict}. A diferencia de la ley adaptativa,
+$\theta_{nom}$ permanece fijo --- la robustez frente al error paramétrico
+proviene íntegramente del término de conmutación de segundo orden, no de
+la convergencia de $\hat\theta$. La Fig.~\ref{fig:sliding} confirma que
+$s(t)$ permanece acotado cerca de cero durante toda la simulación,
+incluso en los instantes de máxima perturbación sísmica.
+
+\begin{figure}[!t]
+\centering
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{../figures/fig5_superficie_deslizante.pdf}\\[2pt]
+{\small (a) Superficie deslizante}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{../figures/fig6_tiempo_computo.pdf}\\[2pt]
+{\small (b) Tiempo de cómputo}
+\end{minipage}
+\caption{(a) Superficie deslizante $s(t)$ del controlador SMC Super-Twisting, acotada cerca de cero durante toda la simulación. (b) Tiempo de cómputo promedio por paso de control, comparado contra el presupuesto de un lazo de 1 kHz.}
+\label{fig:sliding}
+\label{fig:tiempo}
+\end{figure}
+
+\subsection{Control Predictivo basado en Modelo (MPC)}
+\label{sec:mpc}
+Se emplea una formulación de MPC lineal de horizonte deslizante
+resuelta en \emph{forma cerrada} (mínimos cuadrados regularizados en
+lote), linealizando el modelo en torno a $J,b$ nominales, con la gravedad
+tratada como offset constante evaluado en el $q$ actual (válido para un
+horizonte corto $N\Delta t_{mpc}\le150$~ms). Discretizando
+$\dot x=[\dot q,\ddot q]^T\approx A x + B(u - \text{bias})$ con paso
+$\Delta t_{mpc}=10$ ms y horizonte $N=15$, se construyen las matrices de
+predicción en lote $X=\Phi x_0+\Gamma U+\Gamma\mathbf{1}c$ y se minimiza
+\begin{equation}
+J(U) = (\Gamma U + d)^T\bar Q(\Gamma U+d) + U^T\bar R\,U,\quad d=\Phi x_0+\Gamma\mathbf{1}c - X_{ref}
+\end{equation}
+sujeta a $|u_k|\le\tau_{max}=40$ N·m (recorte tras la solución cerrada
+$U^*=-(\Gamma^T\bar Q\Gamma+\bar R)^{-1}\Gamma^T\bar Q\,d$, precomputada
+una sola vez ya que $\Gamma,\bar Q,\bar R$ son constantes), siguiendo la
+formulación estándar de MPC con costo cuadrático y restricciones de
+Mayne~\emph{et al.}~\cite{mayne2000constrained,camacho2007model}.
+A diferencia de las leyes Adaptativa y SMC, el MPC \textbf{no adapta sus parámetros
+nominales}: el sesgo del error paramétrico inicial (25--30\%) no se
+corrige, lo que constituye su principal limitación frente a las demás
+estrategias (Sección~\ref{sec:resultados}), consistente con la necesidad
+de esquemas \emph{offset-free} reportada en la
+literatura~\cite{nubert2020safe,yang2024disturbance}.
+
+\subsection{Control Neuro-Difuso Adaptativo}
+\label{sec:fuzzy}
+Se emplea un aproximador de base gaussiana tipo
+Wang~\cite{wang1992fuzzy,wang1993stable} (estructuralmente equivalente a
+la capa de premisas de un ANFIS~\cite{jang1993anfis}) para estimar la
+dinámica residual no modelada $\Delta_i(e,\dot e)$:
+\begin{equation}
+\hat\Delta_i = \hat\theta_{f,i}^T\xi(e,\dot e),\quad
+\xi_j(e,\dot e) = \frac{\exp\!\left[-\frac{(e-c_j^e)^2+(\dot e-c_j^{\dot e})^2}{2\sigma^2}\right]}{\sum_l \exp[\cdots]}
+\end{equation}
+con $5\times5=25$ funciones base por eje. El par de control es
+$\tau_i = Y_i\theta_{i,nom} - K_d s_i + F_{s,i}\ddot x_g(t) -\hat\tau_{v,i}(t) - \hat\Delta_i$,
+y la ley de adaptación de los pesos difusos se deriva directamente de
+Lyapunov (con $\sigma$-modificación para acotar la deriva
+paramétrica)~\cite{spooner1996stable}:
+\begin{equation}
+\dot{\hat\theta}_{f,i} = \gamma\,\xi(e,\dot e)\,s_i - \sigma_{mod}\,\hat\theta_{f,i}
+\end{equation}
+con $\gamma=80$, $\sigma_{mod}=0.01$, $K_d=20$. Esta ley combina la
+robustez estructural de la ley Adaptativa con una capacidad adicional de
+aprendizaje de no linealidades no capturadas por $Y_i$.
+
+\section{Metodología de Simulación}
+
+Las cuatro leyes se evaluaron bajo un escenario \emph{pareado}: idéntica
+semilla aleatoria (\texttt{seed}=20250716), idéntico perfil de
+perturbación multi-evento (Sección~\ref{sec:perturbaciones}), idéntico
+paso de integración $\Delta t=1$ ms sobre 60 s (60\,000 pasos), y el mismo
+EKF de fusión sensorial (Sección~\ref{sec:ekf}). La referencia de
+apuntamiento combina una tasa sideral en acimut
+($\omega_1=7.292\times10^{-5}$ rad/s) y una deriva lenta en elevación
+($\omega_2=2.0\times10^{-5}$ rad/s). Se introduce además una condición
+inicial desplazada ($0.15^\circ$ en acimut, $-0.10^\circ$ en elevación) y
+un error paramétrico nominal intencional de 25--30\% respecto a
+$\theta_{true}$ para las cuatro leyes por igual, de forma que ninguna
+estrategia opera con conocimiento perfecto de la planta.
+
+La implementación de referencia se desarrolló en \textbf{MATLAB} (carpeta
+\texttt{matlab/}: \texttt{plant\_model.m}, \texttt{dynamics\_forward.m},
+\texttt{AxisEKF.m}, \texttt{AdaptiveAxis.m}, \texttt{SMCAxis.m},
+\texttt{MPCAxis.m}, \texttt{FuzzyAxis.m}, \texttt{main\_simulation.m}). Los
+resultados numéricos y figuras se generaron mediante una réplica exacta en
+Python/NumPy/SciPy (\texttt{python\_sim/}), verificada línea a línea
+contra el script de MATLAB. La réplica en Python fue re-ejecutada de forma
+independiente (\texttt{python\_sim/main\_simulation.py}, misma semilla)
+como control de reproducibilidad, reproduciendo de forma determinista los
+valores de la Tabla~\ref{tab:metricas} hasta el cuarto dígito
+significativo. Adicionalmente, el script \texttt{matlab/main\_simulation.m}
+se ejecutó de forma independiente en \textbf{GNU Octave 11.3.0} (entorno
+de cómputo numérico de código abierto, compatible con MATLAB), por no
+disponer de una licencia de MATLAB propietaria al momento de escribir este
+artículo: se obtuvo el mismo ordenamiento de desempeño entre las cuatro
+leyes (SMC~$<$~Neuro-Difuso~$<$~Adaptativo~$<$~MPC) y valores de RMSE
+total dentro de un 3\% de los reportados en la Tabla~\ref{tab:metricas}
+(191.6, 55.3, 318.4 y 115.2 arcsec, respectivamente), con las diferencias
+remanentes atribuibles a los distintos generadores de números
+pseudoaleatorios de Octave y NumPy para una misma semilla. Esta
+verificación cruzada entre dos plataformas de cómputo numérico
+independientes (Python/NumPy y GNU Octave) sobre la misma implementación
+de referencia en MATLAB da confianza en la robustez del ordenamiento
+comparativo reportado; se recomienda, no obstante, una verificación
+adicional con licencia de MATLAB propietaria antes de su uso en un
+contexto de publicación formal.
+
+\section{Resultados y Discusión}
+\label{sec:resultados}
+
+\subsection{Error de apuntamiento comparado}
+La Fig.~\ref{fig:error} muestra el error de apuntamiento total (norma de
+los errores angulares de acimut y elevación, convertida a arcosegundos)
+para las cuatro leyes a lo largo de los 60 s de simulación. La
+Tabla~\ref{tab:metricas} resume las métricas cuantitativas.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{../figures/fig1_error_comparativo.pdf}
+\caption{Error de apuntamiento total comparado (escala logarítmica) para
+las cuatro leyes de control, bajo perturbación multi-evento idéntica.}
+\label{fig:error}
+\end{figure}
+
+\begin{table*}[!t]
+\centering
+\caption{Métricas comparativas de las cuatro leyes de control (60 s de simulación)}
+\label{tab:metricas}
+\renewcommand{\arraystretch}{0.85}
+\begin{tabular}{lccccc}
+\toprule
+Controlador & RMSE total [arcsec] & Máx. total [arcsec] & Esfuerzo $\int\tau^2dt$ & Chattering [N·m] & Cómputo/paso [ms]\\
+\midrule
+Adaptativo-Lyapunov+EKF & 191.7 & 857.0 & 2090 & 198692 & 0.1620\\
+SMC (Super-Twisting) & \textbf{53.9} & 649.0 & 2217 & 213612 & 0.1148\\
+MPC & 318.7 & 767.8 & 2621 & \textbf{44912} & \textbf{0.0515}\\
+Neuro-Difuso Adaptativo & 116.0 & 865.1 & 2083 & 197749 & 0.2777\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+El controlador \textbf{SMC Super-Twisting} obtuvo el menor RMSE total
+(53.9 arcsec): el término de conmutación de segundo orden rechaza
+directamente tanto la incertidumbre paramétrica (25--30\%) como la
+perturbación de terreno no compensada, sin depender de un proceso de
+convergencia. El \textbf{Neuro-Difuso} (116.0 arcsec) y el
+\textbf{Adaptativo-Lyapunov} (191.7 arcsec) muestran un patrón similar:
+ambos exhiben su mayor error durante la fase Basal (594 y 348 arcsec RMSE
+respectivamente), dominado por el transitorio inicial de convergencia
+paramétrica, y mejoran sustancialmente tras dicha fase de aprendizaje
+(51--65 arcsec RMSE en Coquimbo, Chiloé y Melipilla para el caso
+adaptativo). El \textbf{MPC} lineal presenta el mayor error total
+(318.7 arcsec) de forma consistente en las cuatro fases: al no incorporar
+adaptación paramétrica, el sesgo de modelo persiste durante toda la
+simulación, consistente con la limitación de esquemas MPC sin corrección
+de offset reportada en la literatura~\cite{nubert2020safe,yang2024disturbance}.
+
+\subsection{Estimación del EKF}
+La Fig.~\ref{fig:ekf} confirma que el EKF de fusión sensorial reconstruye
+con alta fidelidad el torque de viento no medible (proceso de
+Gauss-Markov, ec.~\ref{eq:gaussmarkov}): el RMSE de estimación fue de
+2.14 N·m (acimut) y 2.03 N·m (elevación), sobre una desviación estándar
+estacionaria de la señal real de $\sigma_v=1.8$ N·m --- es decir, el EKF
+sigue fielmente la dinámica estocástica de alta variabilidad del proceso,
+resultado consistente con la literatura de EKF como estimador de
+perturbación no medible en sistemas
+mecánicos~\cite{agarwal2016disturbance}.
+
+\subsection{Convergencia paramétrica (ley Adaptativa)}
+La Fig.~\ref{fig:theta} muestra la evolución de $\hat\theta(t)$ para la
+ley Adaptativa-Lyapunov. El parámetro $mgl$ --dominante por su regresor de
+mayor excitación persistente, $\cos(q_2)$-- converge desde su error
+inicial (25\%) hasta el valor real en menos de 20 s. $J_1,b_1,J_2,b_2$
+convergen mucho más lento, reflejo de la débil excitación persistente de
+sus regresores bajo una referencia casi constante --- limitación
+estructural conocida del control adaptativo por gradiente
+\cite{sastry1989adaptive,astrom1995adaptive}, no un defecto de
+implementación.
+
+\begin{figure}[!t]
+\centering
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{../figures/fig3_ekf_estimacion_viento.pdf}\\[2pt]
+{\small (a) Estimación EKF del viento}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{../figures/fig4_convergencia_parametrica.pdf}\\[2pt]
+{\small (b) Convergencia $\hat\theta(t)$}
+\end{minipage}
+\caption{(a) Estimación del torque de viento (proceso Gauss-Markov) por el EKF, comparada con el valor real, para acimut y elevación. (b) Convergencia de los parámetros estimados $\hat\theta(t)$ hacia sus valores reales (líneas punteadas), ley Adaptativa-Lyapunov.}
+\label{fig:ekf}
+\label{fig:theta}
+\end{figure}
+
+\subsection{Esfuerzo de control, chattering y viabilidad computacional}
+
+\begin{figure}[!t]
+\centering
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{../figures/fig2_esfuerzo_control.pdf}\\[2pt]
+{\small (a) Esfuerzo de control}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{../figures/fig8_chattering.pdf}\\[2pt]
+{\small (b) Chattering}
+\end{minipage}
+\caption{(a) Par de control aplicado por eje (acimut, elevación) para las cuatro leyes de control. (b) Índice de chattering (variación total del par) por controlador.}
+\label{fig:esfuerzo}
+\label{fig:chattering}
+\end{figure}
+
+El esfuerzo de control ($\int\tau^2 dt$) es comparable entre las cuatro
+leyes (2083--2621, Fig.~\ref{fig:esfuerzo}): las cuatro señales de par
+están dominadas visualmente por el mismo componente de feedforward
+sísmico común, lo que explica su similitud cualitativa. El chattering
+(variación total del par) resultó, contraintuitivamente, \emph{mayor}
+para SMC que para la ley Adaptativa o Neuro-Difusa
+(Fig.~\ref{fig:chattering}): el mismo feedforward sísmico común
+($F_{s,i}\ddot x_g(t)$, ec.~\ref{eq:disturbance}) enmascara la
+contribución diferencial del término de conmutación de segundo orden del
+SMC. El MPC, al recalcularse a tasa reducida (100 Hz) con retención de
+orden cero, presenta el menor chattering (44912) pero también el mayor
+error de seguimiento, evidenciando el compromiso suavidad/agresividad de
+la corrección. En viabilidad de tiempo real (Fig.~\ref{fig:tiempo}), las
+cuatro leyes cumplen holgadamente el presupuesto de 1 kHz (1 ms/paso):
+incluso el Neuro-Difuso, el más costoso, promedia 0.278 ms/paso.
+
+\section{Materiales y Hoja de Ruta de Implementación Física}
+\label{sec:materiales}
+
+Para validar experimentalmente estos resultados se propone un prototipo a
+escala de \emph{banco de laboratorio semi-profesional}: una base móvil con
+motores DC de encoder cuadratura, un brazo alt-azimutal de 2--3 GDL con
+actuadores de par controlado, y una carga útil óptica sustituta (puntero
+láser + detector de posición o cámara de guiado) que permite medir el
+error de apuntamiento en interior, sin depender del cielo real. La
+Fig.~\ref{fig:bloques} resume la arquitectura y el layout mecánico del
+prototipo; el esquema eléctrico y de buses entre el MCU de tiempo real y
+el SBC que aloja el EKF y la ley de control activa se presenta más
+adelante en la Fig.~\ref{fig:electrico}, junto con la disposición del
+banco de pruebas.
+
+\begin{figure}[!t]
+\centering
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{../figures/fig9_diagrama_bloques.pdf}\\[2pt]
+{\small (a) Diagrama de bloques}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{../figures/fig11_layout_mecanico.pdf}\\[2pt]
+{\small (b) Layout mecánico}
+\end{minipage}
+\caption{(a) Diagrama de bloques del prototipo: perturbaciones controladas $\to$ sensórica $\to$ cómputo (MCU tiempo real + SBC) $\to$ actuación $\to$ planta física, con realimentación óptica de validación. (b) Layout mecánico del robot (vista lateral, no a escala): base móvil, actuadores de acimut/elevación, tubo óptico simulado con contrapeso y carga útil láser+PSD.}
+\label{fig:bloques}
+\label{fig:mecanico}
+\end{figure}
+
+La lista completa de materiales, especificaciones y presupuesto estimado
+(BOM) se encuentra en el material suplementario del proyecto
+(\texttt{materiales/BOM.md}); se resume a continuación por subsistema:
+
+\begingroup
+\setlength{\itemsep}{0pt}\setlength{\topsep}{2pt}\setlength{\parskip}{0pt}
+\begin{itemize}
+  \item \textbf{Base móvil} (chasis, motores+encoder, ruedas, batería/BMS): \textasciitilde\$550 USD.
+  \item \textbf{Brazo robótico 2--3 GDL} (actuadores de acimut/elevación, estructura, rodamientos): \textasciitilde\$558 USD.
+  \item \textbf{Carga útil óptica} (láser, PSD/cámara de guiado, tubo óptico simulado): \textasciitilde\$130 USD.
+  \item \textbf{Sensórica} (IMU 9 ejes, acelerómetro de base, encoders): \textasciitilde\$75 USD (+\$300 USD opcional giróscopo de fibra óptica).
+  \item \textbf{Cómputo} (MCU tiempo real 1 kHz + SBC para EKF/MPC/difuso): \textasciitilde\$170 USD.
+  \item \textbf{Banco de pruebas} (mesa vibratoria para perfil sísmico, ventiladores de velocidad variable para el viento): \textasciitilde\$260 USD.
+\end{itemize}
+\endgroup
+
+\noindent \textbf{Costo total estimado: \textasciitilde\$1\,743 USD}
+(configuración base) o \textasciitilde\$2\,043 USD con giróscopo de fibra
+óptica opcional.
+
+\begin{figure}[!t]
+\centering
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{../figures/fig10_esquema_electrico.pdf}\\[2pt]
+{\small (a) Esquema eléctrico}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{../figures/fig12_banco_pruebas.pdf}\\[2pt]
+{\small (b) Banco de pruebas}
+\end{minipage}
+\caption{(a) Esquema eléctrico y de buses de comunicación entre alimentación, MCU, SBC, sensores y actuadores. (b) Disposición del banco de pruebas: shaker con el perfil sísmico multi-evento, ventiladores PWM para el viento, y blanco fijo para medir el error de apuntamiento.}
+\label{fig:electrico}
+\label{fig:banco}
+\end{figure}
+
+Se propone una hoja de ruta de cinco fases (Fig.~\ref{fig:banco}):
+(1) validación aislada de subsistemas e identificación real de $J,b$;
+(2) integración de sensórica y verificación del EKF en banco estático;
+(3) cierre del lazo con la ley más robusta a error de modelado (SMC);
+(4) pruebas con perturbación física controlada (shaker + ventiladores); y
+(5) comparación experimental de las cuatro leyes, verificando si el orden
+observado en simulación (SMC~$>$~Neuro-Difuso~$>$~Adaptativo~$>$~MPC) se
+sostiene con la dinámica e incertidumbre real del prototipo.
+
+\section{Conclusiones}
+
+Este trabajo extendió la arquitectura clásica de control adaptativo-predictivo
+con EKF de la literatura de antenas fijas de gran apertura hacia un
+telescopio robótico móvil de 2 GDL, incorporando un canal de perturbación
+nuevo (microvibración de terreno) y comparando cuatro leyes de control
+--Adaptativo-Lyapunov, Modos Deslizantes de segundo orden, MPC lineal y
+Neuro-Difuso Adaptativo-- bajo un escenario de simulación multi-evento
+sísmico idéntico y pareado. Los
+resultados muestran que el control por Modos Deslizantes ofrece la mayor
+robustez frente a incertidumbre paramétrica sostenida y perturbación no
+modelada (menor RMSE total), a costa de un mayor índice de variación de la
+señal de control; que las leyes con adaptación en línea (Lyapunov y
+Neuro-Difusa) requieren un período de convergencia inicial pero igualan
+aproximadamente el desempeño del SMC una vez transcurrido; y que el MPC
+lineal, sin corrección de sesgo paramétrico, resulta la estrategia menos
+favorable pese a su bajo costo computacional y señal de control más suave.
+El EKF de fusión sensorial, compartido por las cuatro leyes, demostró una
+capacidad robusta de estimación del torque de viento no medible,
+confirmando su viabilidad como capa de estimación común independiente de
+la ley de control. Trabajo futuro: validación física sobre el prototipo
+propuesto (Sección~\ref{sec:materiales}), reemplazo de las señales
+sísmicas sintéticas por acelerogramas reales de la red CSN, incorporación
+de un MPC \emph{offset-free} y extensión del modelo a 3 GDL.
+
+\textbf{Reproducibilidad.} El código fuente completo (MATLAB y Python),
+los datos de simulación, las figuras vectoriales y la lista de materiales
+están disponibles en el repositorio del proyecto. Los resultados y
+figuras se generaron con la réplica en Python (\texttt{python\_sim/}),
+cuya re-ejecución independiente con semilla fija reproduce de forma
+determinista las métricas reportadas, y fueron confirmados de forma
+cruzada mediante la re-ejecución independiente de
+\texttt{matlab/main\_simulation.m} en GNU Octave 11.3.0 (Sección
+``Metodología de Simulación''); se recomienda adicionalmente una
+verificación con licencia de MATLAB propietaria antes de su uso en un
+contexto de publicación formal o defensa de tesis.
+
+\begingroup
+\let\footnotesize\scriptsize
+\bibliographystyle{IEEEtran}
+\bibliography{bibliografia}
+\endgroup
+
+\end{document}
